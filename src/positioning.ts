@@ -1,16 +1,16 @@
-import { Config, Layout, Node, PositionedNode, Ranking } from './types';
+import { Config, Layout, Node, PositionedNode, Rank } from './types';
 
 // Positioning function based on configuration of (avg.) node width and height.
 // By default takes 3 times the size as space between.
 export default function positioning(
   config: Config,
   nodes: Node[],
-  ranking: Ranking
+  ranks: Rank[]
 ): Layout {
   const _nodes: PositionedNode[] = [];
   const _h = config.orientation === 'horizontal';
 
-  ranking.forEach((r, i) => {
+  ranks.forEach((r, i) => {
     const xStart = _h
       ? 3 * config.width * i
       : -0.5 * (r.length - 1) * 3 * config.width;

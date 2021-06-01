@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import initial from '../src/initial';
+import ranks from '../src/ranks';
 import positioning from '../src/positioning';
 import { Config, Edge, Node } from '../src/types';
 
@@ -36,14 +36,13 @@ const acyclicEdges: Edge[] = [
 ];
 
 const config: Config = {
-  start: '1',
   width: 50,
   height: 10,
   orientation: 'horizontal',
 };
 
 test('Positioning - horizontal acyclic graph', () => {
-  const ranking = initial(startId, acyclicEdges);
+  const ranking = ranks(startId, acyclicEdges);
   expect(positioning(config, nodes, ranking)).toEqual([
     { id: '1', x: 0, y: 0 },
     { id: '2', x: 150, y: 0 },
@@ -59,7 +58,7 @@ test('Positioning - horizontal acyclic graph', () => {
 });
 
 test('Positioning - vertical acyclic graph', () => {
-  const ranking = initial(startId, acyclicEdges);
+  const ranking = ranks(startId, acyclicEdges);
   expect(
     positioning({ ...config, orientation: 'vertical' }, nodes, ranking)
   ).toEqual([

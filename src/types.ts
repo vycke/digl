@@ -7,8 +7,7 @@ export type Config = {
   width: number;
   height: number;
   orientation: 'horizontal' | 'vertical';
-  start: string;
 };
 
 export type Layout = PositionedNode[];
-export type Ranking = string[][];
+export type Rank = string[];

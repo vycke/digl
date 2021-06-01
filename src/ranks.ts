@@ -1,4 +1,4 @@
-import { Edge, Ranking } from './types';
+import { Edge, Rank } from './types';
 
 type V = { [key: string]: boolean };
 
@@ -22,39 +22,39 @@ function getPaths(
 // A breadth-first-search algorithm to determine the ranking of the graph.
 // The rank of a node is the earliest occurance it can have in the graph,
 // with the root node(s) at rank 0.
-function getInitialRanking(nodes: string[], edges: Edge[]) {
-  return function (rank = 0, ranking: Ranking = [], visited: V = {}): Ranking {
-    ranking[rank] = nodes;
+function getInitialRanks(nodes: string[], edges: Edge[]) {
+  return function (rank = 0, ranks: Rank[] = [], visited: V = {}): Rank[] {
+    ranks[rank] = nodes;
     nodes.forEach((n) => (visited[n] = true));
     const ch = edges
       .filter((e) => !visited[e.target] && nodes.includes(e.source))
-      .map((e) => e.target);
+      .map((e) => e.target)
+      .filter((e, i, self) => self.indexOf(e) == i); // only unique items
 
-    if (ch && ch.length > 0)
-      getInitialRanking([...new Set(ch)], edges)(rank + 1, ranking, visited);
+    if (ch.length) getInitialRanks(ch, edges)(rank + 1, ranks, visited);
 
-    return ranking;
+    return ranks;
   };
 }
 
 // Order a ranking based on a sorted list of paths (determined using DFS)
 // Nodes in the longer paths are placed earlier in their ranks
-export default function initial(nodeId: string, edges: Edge[]): Ranking {
+export default function initial(nodeId: string, edges: Edge[]): Rank[] {
   const visited: V = {};
   const _paths = getPaths(nodeId, edges);
 
-  const ranking: Ranking = [];
-  const initialRanking = getInitialRanking([nodeId], edges)();
+  const ranks: Rank[] = [];
+  const initialRanking = getInitialRanks([nodeId], edges)();
 
   _paths.forEach((p) => {
     initialRanking.forEach((rank: string[], index: number) => {
       const nodes = p.filter((n) => rank.includes(n) && !visited[n]);
       if (nodes && nodes.length > 0) {
         nodes.forEach((n) => (visited[n] = true));
-        ranking[index] = [...(ranking[index] || []), ...nodes];
+        ranks[index] = [...(ranks[index] || []), ...nodes];
       }
     });
   });
 
-  return ranking;
+  return ranks;
 }

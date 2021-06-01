@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import initial from '../src/initial';
+import initial from '../src/ranks';
 import { Edge } from '../src/types';
 
 const startId = '1';
