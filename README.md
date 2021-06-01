@@ -51,7 +51,8 @@ function getAllPaths(nodeId, edges, path = [], paths = []) {
 
   if (path.includes(nodeId) || !children || children.length === 0)
     paths.push([...path, nodeId]);
-  else children.map((c) => getPaths(c.target, edges, [...path, nodeId], paths));
+  else
+    children.map((c) => getAllPaths(c.target, edges, [...path, nodeId], paths));
 
   return paths.sort();
 }
