@@ -12,17 +12,17 @@ export default function positioning(
 
   ranks.forEach((r, i) => {
     const xStart = _h
-      ? 3 * config.width * i
+      ? 2 * config.width * i
       : -0.5 * (r.length - 1) * 3 * config.width;
     const yStart = _h
       ? -0.5 * (r.length - 1) * 3 * config.height
-      : 3 * config.height * i;
+      : 2 * config.height * i;
 
     r.forEach((nodeId, nIndex) => {
       const _node: Node = nodes.find((n) => n.id == nodeId) as Node;
 
-      const x = _h ? xStart : xStart + 3 * config.width * nIndex;
-      const y = _h ? yStart + 3 * config.height * nIndex : yStart;
+      const x = _h ? xStart : xStart + 2 * config.width * nIndex;
+      const y = _h ? yStart + 2 * config.height * nIndex : yStart;
       _nodes.push({ ..._node, x, y });
     });
   });

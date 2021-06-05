@@ -60,11 +60,33 @@ function getAllPaths(nodeId, edges, path = [], paths = []) {
 
 ### Score the graph based on its ranks
 
-> WIP
+All 'ranks' can be scored with a number. The represents the number of visual crossing edges a graph based on the ranks will have, plus the amount of edges crossing over a node. Therefore, the lower the score, the better. The scores are determined by:
 
-### Improve the 'ranks'
+- Counting all edges that have a source and target within a single rank, which are not adjecent to each other in the rank.
+- Go through all combinations of ranks, and:
+  - Go through all combinations of ranks
+  - Discard all edges that have a source and target within the same rank
+  - Determine all edges, regardless of the direction, that have a source and target within these ranks
+  - For combination of edges, determine if they cross
 
-> WIP
+```js
+// Note this is a part of the logic
+let _score = 0;
+if (e1.x > e2.x && e1.t < e2.t) _score++;
+```
+
+### Optimize the node order in each rank
+
+Improving the ranks to find a local optimum is achieved with the following heuristic:
+
+1. Copy `ranks` into `_ranks`;
+2. Cycle through each rank of `_ranks` with index `i`;
+3. Within `_rank[i]`, cycle through the nodes, with index `j`, except the last node;
+4. Swap the values of `_rank[i][j]` and `_rank[i][j + 1]`;
+5. Compare the score of the swapped situation with the non-swapped situation;
+6. If the score _did not worsen_, apply the swapping to `_ranks`. Repeat step 1 or 2;
+7. When finished, see of the score of `_ranks` is an improvement compared to the score of `ranks`;
+8. If so, replace `ranks` with `_ranks` and repeat step 1 (for a maximum of 10 times). If not, return `ranks`.
 
 ### Determine the position of each node
 

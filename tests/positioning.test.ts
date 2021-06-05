@@ -45,15 +45,15 @@ test('Positioning - horizontal acyclic graph', () => {
   const ranking = ranks(startId, acyclicEdges);
   expect(positioning(config, nodes, ranking)).toEqual([
     { id: '1', x: 0, y: 0 },
-    { id: '2', x: 150, y: 0 },
-    { id: '3', x: 300, y: -15 },
-    { id: '4', x: 300, y: 15 },
-    { id: '5', x: 450, y: -30 },
-    { id: '8', x: 450, y: 0 },
-    { id: '7', x: 450, y: 30 },
-    { id: '6', x: 600, y: -15 },
-    { id: '9', x: 600, y: 15 },
-    { id: '10', x: 750, y: 0 },
+    { id: '2', x: 100, y: 0 },
+    { id: '3', x: 200, y: -15 },
+    { id: '4', x: 200, y: 5 },
+    { id: '5', x: 300, y: -30 },
+    { id: '8', x: 300, y: -10 },
+    { id: '7', x: 300, y: 10 },
+    { id: '6', x: 400, y: -15 },
+    { id: '9', x: 400, y: 5 },
+    { id: '10', x: 500, y: 0 },
   ]);
 });
 
@@ -63,14 +63,14 @@ test('Positioning - vertical acyclic graph', () => {
     positioning({ ...config, orientation: 'vertical' }, nodes, ranking)
   ).toEqual([
     { id: '1', x: 0, y: 0 },
-    { id: '2', x: 0, y: 30 },
-    { id: '3', x: -75, y: 60 },
-    { id: '4', x: 75, y: 60 },
-    { id: '5', x: -150, y: 90 },
-    { id: '8', x: 0, y: 90 },
-    { id: '7', x: 150, y: 90 },
-    { id: '6', x: -75, y: 120 },
-    { id: '9', x: 75, y: 120 },
-    { id: '10', x: 0, y: 150 },
+    { id: '2', x: 0, y: 20 },
+    { id: '3', x: -75, y: 40 },
+    { id: '4', x: 25, y: 40 },
+    { id: '5', x: -150, y: 60 },
+    { id: '8', x: -50, y: 60 },
+    { id: '7', x: 50, y: 60 },
+    { id: '6', x: -75, y: 80 },
+    { id: '9', x: 25, y: 80 },
+    { id: '10', x: 0, y: 100 },
   ]);
 });
