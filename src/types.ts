@@ -11,3 +11,7 @@ export type Config = {
 
 export type Layout = PositionedNode[];
 export type Rank = string[];
+export type Digl = {
+  positions(start: string, nodes: Node[], edges: Edge[]): Layout;
+  ranks(start: string, edges: Edge[]): Rank[];
+};

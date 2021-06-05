@@ -15,13 +15,15 @@ You can configure a layout machine, by using the `layout` function with a config
 ```js
 import { layout } from '@crinkles/digl`;
 
-const layoutMachine = layout({ width: 100, height: 50, orientation: 'vertical'});
+const machine = layout({ width: 100, height: 50, orientation: 'vertical'});
 
-const nodes = [{ id: '1' }, { '2' }];
+const nodes = [{ id: '1' }, { id: '2' }];
 const edges = [{ source: '1', target: '2' }];
 
-const positionedNodes = layoutMachine('1', nodes, edges);
+const positionedNodes = machine.positions('1', nodes, edges);
 // [{ id: '1', x: 0, y: 0 }, { ... }]
+const ranks = machine.ranks('1', edges);
+// [['1'], ['2']]
 ```
 
 ## How it works
