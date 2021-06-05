@@ -13,9 +13,9 @@ export default function positioning(
   ranks.forEach((r, i) => {
     const xStart = _h
       ? 2 * config.width * i
-      : -0.5 * (r.length - 1) * 3 * config.width;
+      : -0.5 * (r.length - 1) * 2 * config.width;
     const yStart = _h
-      ? -0.5 * (r.length - 1) * 3 * config.height
+      ? -0.5 * (r.length - 1) * 2 * config.height
       : 2 * config.height * i;
 
     r.forEach((nodeId, nIndex) => {
