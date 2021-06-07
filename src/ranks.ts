@@ -12,8 +12,8 @@ function getPaths(
   const children = edges.filter((e) => e.source === nodeId);
 
   // first check avoids cyclic paths
-  if (path.includes(nodeId) || !children || children.length === 0)
-    paths.push([...path, nodeId]);
+  if (path.includes(nodeId)) paths.push(path);
+  else if (!children || children.length === 0) paths.push([...path, nodeId]);
   else children.map((c) => getPaths(c.target, edges, [...path, nodeId], paths));
 
   return paths.sort();
@@ -44,10 +44,10 @@ export default function initial(nodeId: string, edges: Edge[]): Rank[] {
   const _paths = getPaths(nodeId, edges);
 
   const ranks: Rank[] = [];
-  const initialRanking = getInitialRanks([nodeId], edges)();
+  const _initial = getInitialRanks([nodeId], edges)();
 
   _paths.forEach((p) => {
-    initialRanking.forEach((rank: string[], index: number) => {
+    _initial.forEach((rank: string[], index: number) => {
       const nodes = p.filter((n) => rank.includes(n) && !visited[n]);
       if (nodes && nodes.length > 0) {
         nodes.forEach((n) => (visited[n] = true));
