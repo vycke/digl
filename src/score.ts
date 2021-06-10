@@ -3,10 +3,15 @@ import { Edge, Rank } from './types';
 // Determine how many edges exist within a rank, where the two nodes are not
 // adjacent
 function withinRankScore(rank: Rank, edges: Edge[]): number {
-  return edges
+  const crossings = edges
     .filter((e) => rank.includes(e.source) && rank.includes(e.target))
     .map((e) => ({ s: rank.indexOf(e.source), t: rank.indexOf(e.target) }))
-    .filter((e) => e.s > e.t + 1 || e.t > e.s + 1).length;
+    .filter((e) => e.s > e.t + 1 || e.t > e.s + 1);
+
+  let score = 0;
+  crossings.forEach((e) => (score += Math.abs(e.t - e.s) - 1));
+
+  return score;
 }
 
 function betweenRankScore(r1: Rank, r2: Rank, edges: Edge[]): number {

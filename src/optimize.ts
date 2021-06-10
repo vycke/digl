@@ -25,6 +25,9 @@ function swap(ranks: Rank[], i: number, j: number): Rank[] {
 
 // Optimization heuristic
 export function optimize(ranks: Rank[], edges: Edge[], iter = 0): Rank[] {
+  // If ranks is perfect, don't optimize
+  if (score(ranks, edges) === 0) return ranks;
+
   // get a copy of the
   let _ranks = copy(ranks);
 
@@ -38,8 +41,12 @@ export function optimize(ranks: Rank[], edges: Edge[], iter = 0): Rank[] {
     }
   }
 
+  // When found a perfect score, stop
+  if (score(_ranks, edges) === 0) return _ranks;
+
   // If we found a better score than the original, try again, else stop.
   if (iter < 10 && score(_ranks, edges) < score(ranks, edges))
     return optimize(_ranks, edges, iter + 1);
+
   return _ranks;
 }

@@ -10,8 +10,8 @@ const ranks: Rank[] = [
 test('Optimize - no edges', () => {
   const result = optimize(ranks, []);
   expect(result).toEqual([
-    ['1.2', '1.3', '1.1'],
-    ['2.2', '2.3', '2.1'],
+    ['1.1', '1.2', '1.3'],
+    ['2.1', '2.2', '2.3'],
   ]);
   expect(score(result, []) === score(ranks, [])).toBe(true);
 });
@@ -25,7 +25,7 @@ test('Optimize - resolve crossing edges in a rank', () => {
   const result = optimize(ranks, edges);
   expect(result).toEqual([
     ['1.2', '1.1', '1.3'],
-    ['2.3', '2.1', '2.2'],
+    ['2.2', '2.3', '2.1'],
   ]);
   expect(score(result, edges) < score(ranks, edges)).toBe(true);
 });
@@ -37,8 +37,8 @@ test('Score - crossing edge r1 -> r2', () => {
   ];
   const result = optimize(ranks, edges);
   expect(result).toEqual([
-    ['1.3', '1.2', '1.1'],
-    ['2.2', '2.1', '2.3'],
+    ['1.2', '1.3', '1.1'],
+    ['2.2', '2.3', '2.1'],
   ]);
   expect(score(result, edges) < score(ranks, edges)).toBe(true);
 });
@@ -50,8 +50,8 @@ test('Score - crossing edge r2 -> r1', () => {
   ];
   const result = optimize(ranks, edges);
   expect(result).toEqual([
-    ['1.2', '1.1', '1.3'],
-    ['2.3', '2.2', '2.1'],
+    ['1.2', '1.3', '1.1'],
+    ['2.2', '2.3', '2.1'],
   ]);
   expect(score(result, edges) < score(ranks, edges)).toBe(true);
 });
