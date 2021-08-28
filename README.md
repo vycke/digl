@@ -13,7 +13,7 @@ A small JavaScript library that allows you to create visual layout of directed g
 You can configure a layout machine, by using the `layout` function with a configuration object. This returns a `function` that can be used to determine the positions of the based, based on a set of `nodes`, `edges`, and a starting node.
 
 ```js
-import { digl } from '@crinkles/digl`;
+import { digl } from '@crinkles/digl';
 
 const machine = digl({ width: 100, height: 50, orientation: 'vertical'});
 
