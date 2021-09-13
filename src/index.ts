@@ -6,7 +6,7 @@ import { optimize } from './optimize';
 // The entire heuristic for determining the auto layout of a graph
 export function digl(config: Config): Digl {
   function positions(start: string, nodes: Node[], edges: Edge[]): Layout {
-    const _ranks = optimize(getRanks(start, edges), edges);
+    const _ranks = optimize(getRanks(start, edges, config.depthLast), edges)
     return positioning(config, nodes, _ranks);
   }
 

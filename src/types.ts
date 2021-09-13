@@ -7,6 +7,7 @@ export type Config = {
   width: number;
   height: number;
   orientation: 'horizontal' | 'vertical';
+  depthLast?: boolean
 };
 
 export type Layout = PositionedNode[];

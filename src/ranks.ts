@@ -37,17 +37,47 @@ function getInitialRanks(nodes: string[], edges: Edge[]) {
   };
 }
 
+function getInitialRanksWithDupes(nodes: string[], edges: Edge[]) {
+  return function (rank = 0, ranks: Rank[] = [], visited: V = {}): Rank[] {
+    ranks[rank] = nodes
+    nodes.forEach((n) => (visited[n] = true))
+    const ch = edges
+      .filter((e) => nodes.includes(e.source))
+      .map((e) => e.target)
+      .filter((e, i, self) => self.indexOf(e) == i) // only unique items
+    if (ch.length) getInitialRanksWithDupes(ch, edges)(rank + 1, ranks, visited)
+
+    return ranks
+  }
+}
+
 // Order a ranking based on a sorted list of paths (determined using DFS)
 // Nodes in the longer paths are placed earlier in their ranks
-export default function initial(nodeId: string, edges: Edge[]): Rank[] {
+export default function initial(
+  nodeId: string,
+  edges: Edge[],
+  depthLast = true
+): Rank[] {
   const visited: V = {};
   const _paths = getPaths(nodeId, edges);
 
   const ranks: Rank[] = [];
   const _initial = getInitialRanks([nodeId], edges)();
+  const _initialWithDupes = getInitialRanksWithDupes([nodeId], edges)()
+  const _initialDepthLast = ((_initial: Rank[]) => {
+    const visited: V = {}
+    const reversedInitial = _initialWithDupes.reverse()
+    const uniqueLastReversedInitial = reversedInitial.map((rank: Rank, i) => {
+      const filteredRank = rank.filter((n) => !visited[n])
+      rank.forEach((n) => (visited[n] = true))
+      return filteredRank
+    })
+    return uniqueLastReversedInitial.reverse()
+  })(_initialWithDupes)
+  const chosenInitial = depthLast ? _initialDepthLast : _initial
 
   _paths.forEach((p) => {
-    _initial.forEach((rank: string[], index: number) => {
+    chosenInitial.forEach((rank: string[], index: number) => {
       const nodes = p.filter((n) => rank.includes(n) && !visited[n]);
       if (nodes && nodes.length > 0) {
         nodes.forEach((n) => (visited[n] = true));
