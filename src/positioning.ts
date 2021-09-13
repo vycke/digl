@@ -20,7 +20,7 @@ export default function positioning(
 
     r.forEach((nodeId, nIndex) => {
       const _node: Node = nodes.find((n) => n.id == nodeId) as Node;
-
+      if (!_node) return
       const x = _h ? xStart : xStart + 2 * config.width * nIndex;
       const y = _h ? yStart + 2 * config.height * nIndex : yStart;
       _nodes.push({ ..._node, x, y });
