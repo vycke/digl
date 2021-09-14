@@ -56,7 +56,7 @@ function getInitialRanksWithDupes(nodes: string[], edges: Edge[]) {
 export default function initial(
   nodeId: string,
   edges: Edge[],
-  depthLast = true
+  depthLast = false
 ): Rank[] {
   const visited: V = {};
   const _paths = getPaths(nodeId, edges);
@@ -77,7 +77,7 @@ export default function initial(
   const chosenInitial = depthLast ? _initialDepthLast : _initial
 
   _paths.forEach((p) => {
-    chosenInitial.forEach((rank: string[], index: number) => {
+    chosenInitial.forEach((rank: (string| null)[], index: number) => {
       const nodes = p.filter((n) => rank.includes(n) && !visited[n]);
       if (nodes && nodes.length > 0) {
         nodes.forEach((n) => (visited[n] = true));
