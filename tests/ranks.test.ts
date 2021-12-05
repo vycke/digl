@@ -1,8 +1,20 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import initial from '../src/ranks';
-import { Edge } from '../src/types';
+import { Edge, Node } from '../src/types';
 
 const startId = '1';
+const nodes: Node[] = [
+  { id: '1' },
+  { id: '2' },
+  { id: '3' },
+  { id: '4' },
+  { id: '5' },
+  { id: '6' },
+  { id: '7' },
+  { id: '8' },
+  { id: '9' },
+  { id: '10' },
+];
 const acyclicEdges: Edge[] = [
   { source: '1', target: '2' },
   { source: '2', target: '3' },
@@ -30,23 +42,24 @@ const cyclicEdges: Edge[] = [
 ];
 
 test('Initial ranking - empty edges', () => {
-  const ranking = initial(startId, []);
+  const ranking = initial(startId, nodes, []);
   expect(ranking).toEqual([[startId]]);
 });
 
 test('Initial ranking - acyclic graph', () => {
-  const ranking = initial(startId, acyclicEdges);
+  const ranking = initial(startId, nodes, acyclicEdges);
   expect(ranking).toEqual([
     ['1'],
     ['2'],
-    ['3', '4'],
-    ['5', '8', '7'],
-    ['6', '9'],
-    ['10'],
+    ['3'],
+    ['4', '7'],
+    ['8', '9'],
+    ['5', '10'],
+    ['6'],
   ]);
 });
 
 test('Initial ranking - cyclic graph', () => {
-  const ranking = initial(startId, cyclicEdges);
-  expect(ranking).toEqual([['1'], ['2', '4'], ['3']]);
+  const ranking = initial(startId, nodes, cyclicEdges);
+  expect(ranking).toEqual([['1'], ['2'], ['3', '4']]);
 });

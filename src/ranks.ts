@@ -1,4 +1,4 @@
-import { Edge, Rank } from './types';
+import { Edge, Node, Rank } from './types';
 
 type V = { [key: string]: boolean };
 
@@ -19,32 +19,36 @@ function getPaths(
   return paths.sort();
 }
 
-// A breadth-first-search algorithm to determine the ranking of the graph.
-// The rank of a node is the earliest occurance it can have in the graph,
-// with the root node(s) at rank 0.
-function getInitialRanks(nodes: string[], edges: Edge[]) {
-  return function (rank = 0, ranks: Rank[] = [], visited: V = {}): Rank[] {
-    ranks[rank] = nodes;
-    nodes.forEach((n) => (visited[n] = true));
-    const ch = edges
-      .filter((e) => !visited[e.target] && nodes.includes(e.source))
-      .map((e) => e.target)
-      .filter((e, i, self) => self.indexOf(e) == i); // only unique items
+// Ranks nodes in a rank, based on the longest path from the source
+function getInitialRanks(nodes: Node[], paths: string[][]): Rank[] {
+  const ranks: Rank[] = new Array<Rank>(paths[0].length);
 
-    if (ch.length) getInitialRanks(ch, edges)(rank + 1, ranks, visited);
+  nodes.forEach((n) => {
+    const _paths = paths.filter((p) => p.includes(n.id));
 
-    return ranks;
-  };
+    let index = 0;
+    _paths.forEach((p) => {
+      const _index = p.findIndex((p) => p === n.id);
+      if (_index > index) index = _index;
+    });
+
+    ranks[index] = [...(ranks[index] || []), n.id];
+  });
+  return ranks;
 }
 
 // Order a ranking based on a sorted list of paths (determined using DFS)
 // Nodes in the longer paths are placed earlier in their ranks
-export default function initial(nodeId: string, edges: Edge[]): Rank[] {
+export default function initial(
+  nodeId: string,
+  nodes: Node[],
+  edges: Edge[]
+): Rank[] {
   const visited: V = {};
   const _paths = getPaths(nodeId, edges);
 
   const ranks: Rank[] = [];
-  const _initial = getInitialRanks([nodeId], edges)();
+  const _initial = getInitialRanks(nodes, _paths);
 
   _paths.forEach((p) => {
     _initial.forEach((rank: string[], index: number) => {
