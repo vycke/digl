@@ -15,7 +15,7 @@ You can configure a layout machine, by using the `layout` function with a config
 ```js
 import { digl } from '@crinkles/digl';
 
-const machine = digl({ width: 100, height: 50, orientation: 'vertical'});
+const machine = digl({ width: 100, height: 50, orientation: 'vertical' });
 
 const nodes = [{ id: '1' }, { id: '2' }];
 const edges = [{ source: '1', target: '2' }];
@@ -42,8 +42,8 @@ A _rank_ is a list of nodes that can be accessed within X steps from the startin
 
 Step one of the algorithm is to determine the initial ranks of the graph. This is achieved by combining several different techniques, and create an ordered list of ranks.
 
-1. Use a _breadth-first search_ algorithm to determine the shortest possible route from the start node. The length of the found shortest route for each node is used as the corresponding _rank_ of the node.
-2. Get all the paths based on the starting node, using a _depth-first search_ tree-traversal algorithm (note: it ignores already visited nodes within a path to avoid loops).
+1. Get all the paths based on the starting node, using a _depth-first search_ tree-traversal algorithm (note: it ignores already visited nodes within a path to avoid loops).
+2. Use a n algorithm to determine the longest possible route from the start node, disregarding loops. The length of the found longest route for each node is used as the corresponding _rank_ of the node.
 3. Order all nodes within a rank, based on its occurance in the longest paths, i.e. nodes in longer paths are placed higher in a rank compared to nodes in a shorter path. The resulting ranks are the initial ranks of the algorithm of this package.
 
 ```js
