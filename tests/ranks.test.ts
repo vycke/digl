@@ -1,8 +1,15 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import initial from '../src/ranks';
-import { Edge, Node } from '../src/types';
+import { Config, Edge, Node } from '../src/types';
 
 const startId = '1';
+const config: Config = {
+  width: 50,
+  height: 10,
+  orientation: 'horizontal',
+  addEmptySpots: false,
+  shortestPath: false,
+};
 const nodes: Node[] = [
   { id: '1' },
   { id: '2' },
@@ -42,12 +49,12 @@ const cyclicEdges: Edge[] = [
 ];
 
 test('Initial ranking - empty edges', () => {
-  const ranking = initial(startId, nodes, []);
+  const ranking = initial(startId, nodes, [], config);
   expect(ranking).toEqual([[startId]]);
 });
 
 test('Initial ranking - acyclic graph', () => {
-  const ranking = initial(startId, nodes, acyclicEdges);
+  const ranking = initial(startId, nodes, acyclicEdges, config);
   expect(ranking).toEqual([
     ['1'],
     ['2'],
@@ -60,6 +67,37 @@ test('Initial ranking - acyclic graph', () => {
 });
 
 test('Initial ranking - cyclic graph', () => {
-  const ranking = initial(startId, nodes, cyclicEdges);
+  const ranking = initial(startId, nodes, cyclicEdges, config);
   expect(ranking).toEqual([['1'], ['2'], ['3', '4']]);
+});
+
+test('Initial ranking - acyclic graph shortest path', () => {
+  const ranking = initial(startId, nodes, acyclicEdges, {
+    ...config,
+    shortestPath: true,
+  });
+  expect(ranking).toEqual([
+    ['1'],
+    ['2'],
+    ['3', '4'],
+    ['5', '8', '7'],
+    ['6', '9'],
+    ['10'],
+  ]);
+});
+
+test('Initial ranking - acyclic graph shortest path', () => {
+  const ranking = initial(startId, nodes, acyclicEdges, {
+    ...config,
+    shortestPath: true,
+    addEmptySpots: true,
+  });
+  expect(ranking).toEqual([
+    ['1'],
+    ['2'],
+    ['3', '4'],
+    ['5', '8', '7'],
+    ['6', '9'],
+    ['10'],
+  ]);
 });
