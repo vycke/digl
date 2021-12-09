@@ -39,10 +39,12 @@ const config: Config = {
   width: 50,
   height: 10,
   orientation: 'horizontal',
+  addEmptySpots: false,
+  shortestPath: false,
 };
 
 test('Positioning - horizontal acyclic graph', () => {
-  const ranking = ranks(startId, nodes, acyclicEdges);
+  const ranking = ranks(startId, nodes, acyclicEdges, config);
   expect(positioning(config, nodes, ranking)).toEqual([
     { id: '1', x: 0, y: 0 },
     { id: '2', x: 100, y: 0 },
@@ -58,7 +60,7 @@ test('Positioning - horizontal acyclic graph', () => {
 });
 
 test('Positioning - vertical acyclic graph', () => {
-  const ranking = ranks(startId, nodes, acyclicEdges);
+  const ranking = ranks(startId, nodes, acyclicEdges, config);
   expect(
     positioning({ ...config, orientation: 'vertical' }, nodes, ranking)
   ).toEqual([
