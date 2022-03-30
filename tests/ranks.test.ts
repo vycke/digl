@@ -101,3 +101,33 @@ test('Initial ranking - acyclic graph shortest path', () => {
     ['10'],
   ]);
 });
+
+test('Initial ranking - support for solitary nodes [#8]', () => {
+  const nodes: Node[] = [
+    { id: '1' },
+    { id: '2' },
+    { id: '3' },
+    { id: '4' },
+    { id: '5' },
+    { id: '6' },
+    { id: '7' },
+    { id: '8', solitary: true },
+    { id: '9' },
+    { id: '10' },
+  ];
+
+  const ranking = initial(startId, nodes, acyclicEdges, {
+    ...config,
+    shortestPath: true,
+    addEmptySpots: false,
+  });
+  expect(ranking).toEqual([
+    ['1'],
+    ['2'],
+    ['3', '4'],
+    ['8'],
+    ['5', '7'],
+    ['6', '9'],
+    ['10'],
+  ]);
+});
