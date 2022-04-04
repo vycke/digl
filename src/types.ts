@@ -1,5 +1,5 @@
 export type Edge = { source: string; target: string };
-export type Node = { id: string };
+export type Node = { id: string; solitary?: boolean };
 export type Position = { x: number; y: number };
 export type PositionedNode = { x: number; y: number } & Node;
 
