@@ -43,6 +43,9 @@ export function optimize(ranks: Rank[], edges: Edge[], iter = 0): Rank[] {
 
   // When found a perfect score, stop
   if (score(_ranks, edges) === 0) return _ranks;
+  // Only on first try, if the same score is found, the algorithm fires again
+  if (iter === 0 && score(_ranks, edges) < score(ranks, edges))
+    return optimize(_ranks, edges, iter + 1);
 
   // If we found a better score than the original, try again, else stop.
   if (iter < 10 && score(_ranks, edges) < score(ranks, edges))

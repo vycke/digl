@@ -1,27 +1,13 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import initial from '../src/ranks';
-import { Config, Edge, Node } from '../src/types';
+import { Config, Edge } from '../src/types';
 
 const startId = '1';
 const config: Config = {
-  width: 50,
-  height: 10,
-  orientation: 'horizontal',
   addEmptySpots: false,
   shortestPath: false,
 };
-const nodes: Node[] = [
-  { id: '1' },
-  { id: '2' },
-  { id: '3' },
-  { id: '4' },
-  { id: '5' },
-  { id: '6' },
-  { id: '7' },
-  { id: '8' },
-  { id: '9' },
-  { id: '10' },
-];
+
 const acyclicEdges: Edge[] = [
   { source: '1', target: '2' },
   { source: '2', target: '3' },
@@ -49,12 +35,12 @@ const cyclicEdges: Edge[] = [
 ];
 
 test('Initial ranking - empty edges', () => {
-  const ranking = initial(startId, nodes, [], config);
-  expect(ranking).toEqual([[startId]]);
+  const ranking = initial(startId, [], config);
+  expect(ranking).toEqual([]);
 });
 
 test('Initial ranking - acyclic graph', () => {
-  const ranking = initial(startId, nodes, acyclicEdges, config);
+  const ranking = initial(startId, acyclicEdges, config);
   expect(ranking).toEqual([
     ['1'],
     ['2'],
@@ -67,12 +53,12 @@ test('Initial ranking - acyclic graph', () => {
 });
 
 test('Initial ranking - cyclic graph', () => {
-  const ranking = initial(startId, nodes, cyclicEdges, config);
+  const ranking = initial(startId, cyclicEdges, config);
   expect(ranking).toEqual([['1'], ['2'], ['3', '4']]);
 });
 
 test('Initial ranking - acyclic graph shortest path', () => {
-  const ranking = initial(startId, nodes, acyclicEdges, {
+  const ranking = initial(startId, acyclicEdges, {
     ...config,
     shortestPath: true,
   });
@@ -87,7 +73,7 @@ test('Initial ranking - acyclic graph shortest path', () => {
 });
 
 test('Initial ranking - acyclic graph shortest path', () => {
-  const ranking = initial(startId, nodes, acyclicEdges, {
+  const ranking = initial(startId, acyclicEdges, {
     ...config,
     shortestPath: true,
     addEmptySpots: true,
@@ -103,22 +89,10 @@ test('Initial ranking - acyclic graph shortest path', () => {
 });
 
 test('Initial ranking - support for solitary nodes [#8]', () => {
-  const nodes: Node[] = [
-    { id: '1' },
-    { id: '2' },
-    { id: '3' },
-    { id: '4' },
-    { id: '5' },
-    { id: '6' },
-    { id: '7' },
-    { id: '8', solitary: true },
-    { id: '9' },
-    { id: '10' },
-  ];
-
-  const ranking = initial(startId, nodes, acyclicEdges, {
+  const ranking = initial(startId, acyclicEdges, {
     ...config,
     shortestPath: true,
+    solitary: ['8'],
     addEmptySpots: false,
   });
   expect(ranking).toEqual([
