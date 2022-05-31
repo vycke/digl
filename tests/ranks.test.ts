@@ -4,9 +4,6 @@ import { Config, Edge, Node } from '../src/types';
 
 const startId = '1';
 const config: Config = {
-  width: 50,
-  height: 10,
-  orientation: 'horizontal',
   addEmptySpots: false,
   shortestPath: false,
 };

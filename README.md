@@ -15,15 +15,15 @@ You can configure a layout machine, by using the `layout` function with a config
 ```js
 import { digl } from '@crinkles/digl';
 
-const machine = digl({ width: 100, height: 50, orientation: 'vertical' });
+const machine = digl({ shortestPath: false, addEmptySpots: false });
 
 const nodes = [{ id: '1' }, { id: '2' }];
 const edges = [{ source: '1', target: '2' }];
 
-const positionedNodes = machine.positions('1', nodes, edges);
-// [{ id: '1', x: 0, y: 0 }, { ... }]
-const ranks = machine.ranks('1', edges);
+const ranks = machine.get('1', nodes, edges);
 // [['1'], ['2']]
+const score = machine.score('1', nodes, edges);
+// 0
 ```
 
 ## How it works
@@ -43,7 +43,7 @@ A _rank_ is a list of nodes that can be accessed within X steps from the startin
 Step one of the algorithm is to determine the initial ranks of the graph. This is achieved by combining several different techniques, and create an ordered list of ranks.
 
 1. Get all the paths based on the starting node, using a _depth-first search_ tree-traversal algorithm (note: it ignores already visited nodes within a path to avoid loops).
-2. Use a n algorithm to determine the longest possible route from the start node, disregarding loops. The length of the found longest route for each node is used as the corresponding _rank_ of the node.
+2. Use a n algorithm to determine the longest or shortest (based on the config) possible route from the start node, disregarding loops. The length of the found longest route for each node is used as the corresponding _rank_ of the node.
 3. Order all nodes within a rank, based on its occurance in the longest paths, i.e. nodes in longer paths are placed higher in a rank compared to nodes in a shorter path. The resulting ranks are the initial ranks of the algorithm of this package.
 
 ```js
@@ -90,10 +90,36 @@ Improving the ranks to find a local optimum is achieved with the following heuri
 7. When finished, see of the score of `_ranks` is an improvement compared to the score of `ranks`;
 8. If so, replace `ranks` with `_ranks` and repeat step 1 (for a maximum of 10 times). If not, return `ranks`.
 
-### Determine the position of each node
-
-Based on the resulting rank, all nodes are either vertically, or horizontally orientated, based on the configurattion. Nodes are positioned from top-to-bottom (or left-to-right in case of vertical orientation) as they are ordered in a rank. As visualized below, all nodes are centered around a middle line, to create a balanced tree-like graph. The space between two ranks is _2x the width/height_ in de configuration, based on the orientation (horizontal/vertical respectively). Similarly, the distance between two nodes within a rank, is _2x the height/width_ from the configuration.
+### Example positioning algorithm
 
 ![](./img/positioning.png)
 
-> NOTE: in case you don't have fixed width/height for nodes, use an estimate in the configuration.
+```ts
+export default function positioning(
+  config: Config,
+  nodes: Node[],
+  ranks: Rank[]
+): Layout {
+  const _nodes: PositionedNode[] = [];
+  const _h = config.orientation === 'horizontal';
+
+  ranks.forEach((r, i) => {
+    const xStart = _h
+      ? 2 * config.width * i
+      : -0.5 * (r.length - 1) * 2 * config.width;
+    const yStart = _h
+      ? -0.5 * (r.length - 1) * 2 * config.height
+      : 2 * config.height * i;
+
+    r.forEach((nodeId, nIndex) => {
+      const _node: Node = nodes.find((n) => n.id == nodeId) as Node;
+      if (!_node) return;
+      const x = _h ? xStart : xStart + 2 * config.width * nIndex;
+      const y = _h ? yStart + 2 * config.height * nIndex : yStart;
+      _nodes.push({ ..._node, x, y });
+    });
+  });
+
+  return _nodes;
+}
+```

@@ -95,18 +95,24 @@ export default function initial(
   // Find out if there are any nodes marked as "solitary"
   // https://github.com/kevtiq/digl/issues/8
   // These nodes are to be scheduled in a rank of their own
-  const solitaries: string[] = nodes.filter((node) => node.solitary).map((node) => node.id);
+  const solitaries: string[] = nodes
+    .filter((node) => node.solitary)
+    .map((node) => node.id);
   if (solitaries.length > 0) {
     // There are a nonzero amount of solitaries, so rebuild the rank list based on this information
     const _inital_for_solitaries: Rank[] = [];
     _initial.forEach((rank: Rank) => {
       // Find any solitaries in the current rank
-      const solitariesInRow: string[] = rank.filter((node) => node && solitaries.indexOf(node) >= 0).map((node) => node as string);
+      const solitariesInRow: string[] = rank
+        .filter((node) => node && solitaries.indexOf(node) >= 0)
+        .map((node) => node as string);
       if (solitariesInRow) {
         // If there are any solitaries, add them one by one to the new rank list
-        solitariesInRow.forEach(node => _inital_for_solitaries.push([node]));
+        solitariesInRow.forEach((node) => _inital_for_solitaries.push([node]));
         // Add the remaining non-solitary nodes, if there anre any
-        const rankRest = rank.filter((node) => !node || solitaries.indexOf(node) < 0);
+        const rankRest = rank.filter(
+          (node) => !node || solitaries.indexOf(node) < 0
+        );
         if (rankRest.length > 0) {
           _inital_for_solitaries.push(rankRest);
         }
