@@ -6,7 +6,7 @@
 [![Minified size](https://img.shields.io/bundlephobia/min/@crinkles/digl?label=minified)](https://www.npmjs.com/package/@crinkles/digl)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A small JavaScript library that allows you to create visual layout of directed graphs (e.g. state machines), with minimum effort. The algorithm/heuristic is based on the workings of [GraphViz](https://www.graphviz.org/Documentation/TSE93.pdf).
+A small JavaScript library that allows you to create visual layout of directed graphs (e.g. state machines), with minimum effort. The algorithm/heuristic is loosely based on the workings of [GraphViz](https://www.graphviz.org/Documentation/TSE93.pdf).
 
 ## Getting started
 
@@ -16,15 +16,19 @@ You can configure a layout machine, by using the `layout` function with a config
 import { digl } from '@crinkles/digl';
 
 const machine = digl({ shortestPath: false, addEmptySpots: false });
-
-const nodes = [{ id: '1' }, { id: '2' }];
 const edges = [{ source: '1', target: '2' }];
 
-const ranks = machine.get('1', nodes, edges);
+const ranks = machine.get('1', edges);
 // [['1'], ['2']]
-const score = machine.score('1', nodes, edges);
+const score = machine.score('1', edges);
 // 0
 ```
+
+## Configuration
+
+- `shortestPath: boolean`: order nodes in the graph based on the shortest path they are from the root, or the longest path.
+- `addEmptySpots: boolean`: try to add empty spots in the ranks further optimize the graph.
+- `solitary: string[]`: an array of node IDs (corresponding to the source/target in the edges) that should be solitary within a rank.
 
 ## How it works
 

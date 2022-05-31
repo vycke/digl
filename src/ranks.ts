@@ -2,6 +2,15 @@ import { Config, Edge, Node, Rank } from './types';
 
 type V = { [key: string]: boolean };
 
+function getNodes(edges: Edge[]): Node[] {
+  const nodes: Node[] = [];
+  edges.forEach(({ source, target }) => {
+    if (!nodes.find((n) => n.id === source)) nodes.push({ id: source });
+    if (!nodes.find((n) => n.id === target)) nodes.push({ id: target });
+  });
+  return nodes;
+}
+
 // Depth-First-Search (DFS) for an Directed Graph (cycles in paths are discarded)
 function getPaths(
   nodeId: string,
@@ -79,7 +88,6 @@ function addEmptySpots(ranks: Rank[], edges: Edge[]): Rank[] {
 // Nodes in the longer paths are placed earlier in their ranks
 export default function initial(
   nodeId: string,
-  nodes: Node[],
   edges: Edge[],
   config: Config
 ): Rank[] {
@@ -87,42 +95,26 @@ export default function initial(
   const _paths = getPaths(nodeId, edges);
 
   const ranks: Rank[] = [];
+  const nodes = getNodes(edges);
 
-  let _initial = config.shortestPath
+  const _inbetween = config.shortestPath
     ? getRanksByShortestPath([nodeId], edges)()
     : getRanksByLongestPath(nodes, _paths);
 
   // Find out if there are any nodes marked as "solitary"
   // https://github.com/kevtiq/digl/issues/8
   // These nodes are to be scheduled in a rank of their own
-  const solitaries: string[] = nodes
-    .filter((node) => node.solitary)
-    .map((node) => node.id);
-  if (solitaries.length > 0) {
-    // There are a nonzero amount of solitaries, so rebuild the rank list based on this information
-    const _inital_for_solitaries: Rank[] = [];
-    _initial.forEach((rank: Rank) => {
-      // Find any solitaries in the current rank
-      const solitariesInRow: string[] = rank
-        .filter((node) => node && solitaries.indexOf(node) >= 0)
-        .map((node) => node as string);
-      if (solitariesInRow) {
-        // If there are any solitaries, add them one by one to the new rank list
-        solitariesInRow.forEach((node) => _inital_for_solitaries.push([node]));
-        // Add the remaining non-solitary nodes, if there anre any
-        const rankRest = rank.filter(
-          (node) => !node || solitaries.indexOf(node) < 0
-        );
-        if (rankRest.length > 0) {
-          _inital_for_solitaries.push(rankRest);
-        }
-      } else {
-        // There are no solitaries in the rank, so add the rank without changes
-        _inital_for_solitaries.push(rank);
-      }
-    });
-    _initial = _inital_for_solitaries;
-  }
+  const _initial: Rank[] = [];
+  _inbetween.forEach((rank) => {
+    const solitaries = rank.filter((n) =>
+      config?.solitary?.includes(n as string)
+    );
+    if (!solitaries?.length) _initial.push(rank);
+    else {
+      _initial.push(solitaries);
+      _initial.push(rank.filter((n) => !solitaries.includes(n)));
+    }
+  });
 
   _paths.forEach((p) => {
     _initial.forEach((rank: Rank, index: number) => {
