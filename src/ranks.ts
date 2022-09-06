@@ -1,32 +1,7 @@
 import { Config, Edge, Node, Rank } from './types';
+import { getNodes, getPaths } from './utils';
 
 type V = { [key: string]: boolean };
-
-function getNodes(edges: Edge[]): Node[] {
-  const nodes: Node[] = [];
-  edges.forEach(({ source, target }) => {
-    if (!nodes.find((n) => n.id === source)) nodes.push({ id: source });
-    if (!nodes.find((n) => n.id === target)) nodes.push({ id: target });
-  });
-  return nodes;
-}
-
-// Depth-First-Search (DFS) for an Directed Graph (cycles in paths are discarded)
-function getPaths(
-  nodeId: string,
-  edges: Edge[],
-  path: string[] = [],
-  paths: string[][] = []
-) {
-  const children = edges.filter((e) => e.source === nodeId);
-
-  // first check avoids cyclic paths
-  if (path.includes(nodeId)) paths.push(path);
-  else if (!children || children.length === 0) paths.push([...path, nodeId]);
-  else children.map((c) => getPaths(c.target, edges, [...path, nodeId], paths));
-
-  return paths.sort();
-}
 
 // A breadth-first-search algorithm to determine the ranking of the graph.
 // Ranks nodes in a rank, based on the longest path from the source
@@ -86,7 +61,7 @@ function addEmptySpots(ranks: Rank[], edges: Edge[]): Rank[] {
 
 // Order a ranking based on a sorted list of paths (determined using DFS)
 // Nodes in the longer paths are placed earlier in their ranks
-export default function initial(
+export function initRank(
   nodeId: string,
   edges: Edge[],
   config: Config

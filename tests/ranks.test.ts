@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import initial from '../src/ranks';
+import { initRank } from '../src/ranks';
 import { Config, Edge } from '../src/types';
 
 const startId = '1';
@@ -35,12 +35,12 @@ const cyclicEdges: Edge[] = [
 ];
 
 test('Initial ranking - empty edges', () => {
-  const ranking = initial(startId, [], config);
+  const ranking = initRank(startId, [], config);
   expect(ranking).toEqual([]);
 });
 
 test('Initial ranking - acyclic graph', () => {
-  const ranking = initial(startId, acyclicEdges, config);
+  const ranking = initRank(startId, acyclicEdges, config);
   expect(ranking).toEqual([
     ['1'],
     ['2'],
@@ -53,12 +53,12 @@ test('Initial ranking - acyclic graph', () => {
 });
 
 test('Initial ranking - cyclic graph', () => {
-  const ranking = initial(startId, cyclicEdges, config);
+  const ranking = initRank(startId, cyclicEdges, config);
   expect(ranking).toEqual([['1'], ['2'], ['3', '4']]);
 });
 
 test('Initial ranking - acyclic graph shortest path', () => {
-  const ranking = initial(startId, acyclicEdges, {
+  const ranking = initRank(startId, acyclicEdges, {
     ...config,
     shortestPath: true,
   });
@@ -73,7 +73,7 @@ test('Initial ranking - acyclic graph shortest path', () => {
 });
 
 test('Initial ranking - acyclic graph shortest path', () => {
-  const ranking = initial(startId, acyclicEdges, {
+  const ranking = initRank(startId, acyclicEdges, {
     ...config,
     shortestPath: true,
     addEmptySpots: true,
@@ -89,7 +89,7 @@ test('Initial ranking - acyclic graph shortest path', () => {
 });
 
 test('Initial ranking - support for solitary nodes [#8]', () => {
-  const ranking = initial(startId, acyclicEdges, {
+  const ranking = initRank(startId, acyclicEdges, {
     ...config,
     shortestPath: true,
     solitary: ['8'],

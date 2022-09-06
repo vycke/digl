@@ -9,7 +9,9 @@ export type Config = {
 };
 
 export type Rank = (string | null)[];
+export type Graph = Rank[][];
+export type StartNodes = string;
 export type Digl = {
-  get(start: string, edges: Edge[]): Rank[];
-  score(start: string, edges: Edge[]): number;
+  get(edges: Edge[]): Graph;
+  score(edges: Edge[]): number[];
 };
