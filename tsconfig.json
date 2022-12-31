@@ -1,8 +1,8 @@
 {
   "include": ["src"],
   "compilerOptions": {
-    "lib": ["es6"],
-    "target": "es6",
+    "lib": ["es2019"],
+    "target": "es2019",
     "outDir": "./dist",
     "rootDir": "./src",
     "moduleResolution": "node",
