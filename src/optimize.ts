@@ -23,33 +23,57 @@ function swap(ranks: Rank[], i: number, j: number): Rank[] {
   return _ranks;
 }
 
-// Optimization heuristic
-export function optimize(ranks: Rank[], edges: Edge[], iter = 0): Rank[] {
-  // If ranks is perfect, don't optimize
-  if (score(ranks, edges) === 0) return ranks;
+// Function to add empty spots for better layouts
+// For each edge, where the target is more than 1 rank away,
+// add an empty spot on the same index of the source of the edge
+function addEmptySpots(ranks: Rank[], edges: Edge[]): Rank[] {
+  ranks.forEach((rank, i) => {
+    rank.forEach((node, y) => {
+      const edgesOut = edges.filter((edge) => edge.source === node);
+      edgesOut.forEach((edge) => {
+        const rankOfTarget = ranks.findIndex((rank) =>
+          rank.includes(edge.target)
+        );
+        if (rankOfTarget > i + 1) {
+          for (let z = i + 1; z < rankOfTarget; z++) {
+            ranks[z] = [...ranks[z].slice(0, y), null, ...ranks[z].slice(y)];
+          }
+        }
+      });
+    });
+  });
+  return ranks;
+}
 
-  // get a copy of the
-  let _ranks = copy(ranks);
+// Optimization heuristic
+export function optimize(ranks: Rank[], edges: Edge[], retry = true): Rank[] {
+  // If ranks is perfect, don't optimize
+  const _oldScore = score(ranks, edges);
+  if (_oldScore === 0) return ranks;
+
+  // get a copy of the original ranks, incl. empty spots
+  let _ranks = addEmptySpots(copy(ranks), edges);
+  let _newScore = score(_ranks, edges);
 
   for (let i = 0; i < _ranks.length; i++) {
     for (let j = 0; j < _ranks[i].length - 1; j++) {
       // Swap the values in _ranks
       const temp = swap(_ranks, i, j);
       // If the score does not worsen, apply the change
-      if (score(temp, edges) <= score(_ranks, edges))
+      if (score(temp, edges) <= _newScore) {
         _ranks = swap(_ranks, i, j);
+        _newScore = score(_ranks, edges);
+      }
     }
   }
 
   // When found a perfect score, stop
-  if (score(_ranks, edges) === 0) return _ranks;
-  // Only on first try, if the same score is found, the algorithm fires again
-  if (iter === 0 && score(_ranks, edges) < score(ranks, edges))
-    return optimize(_ranks, edges, iter + 1);
-
-  // If we found a better score than the original, try again, else stop.
-  if (iter < 10 && score(_ranks, edges) < score(ranks, edges))
-    return optimize(_ranks, edges, iter + 1);
+  if (_newScore === 0) return _ranks;
+  // If a better score is find that is not optimal, continue searching
+  // If an equal score is found, execute the algorithm one more time
+  // to avoid cyclic optimizations
+  if (retry && _newScore <= _oldScore)
+    return optimize(_ranks, edges, _newScore !== _oldScore);
 
   return _ranks;
 }
