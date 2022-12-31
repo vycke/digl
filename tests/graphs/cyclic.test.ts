@@ -11,7 +11,7 @@ const edges: Edge[] = [
 ];
 
 test('Cyclic graph', () => {
-  const result = digl(edges, { shortestPath: true })[0];
-  expect(result).toEqual([['1'], ['2', '4'], ['3']]);
+  const result = digl(edges, {})[0];
+  expect(result).toEqual([['1'], ['2'], ['3', '4']]);
   expect(score(result, edges)).toBe(0);
 });

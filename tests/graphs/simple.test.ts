@@ -21,27 +21,12 @@ const edges: Edge[] = [
 ];
 
 test('Simple graph - empty edges', () => {
-  const result = digl([], { shortestPath: true });
+  const result = digl([], {});
   expect(result).toEqual([]);
 });
 
-test('Simple graph - shortestPath', () => {
-  const result = digl(edges, { shortestPath: true })[0];
-
-  expect(result).toEqual([
-    ['1'],
-    ['2'],
-    ['4', '3'],
-    ['8', '5', '7'],
-    ['6', '9'],
-    ['10'],
-  ]);
-
-  expect(score(result, edges)).toBe(0);
-});
-
-test('Simple graph - longestPath', () => {
-  const result = digl(edges, { shortestPath: false })[0];
+test('Simple graph', () => {
+  const result = digl(edges, {})[0];
   expect(result).toEqual([
     ['1'],
     ['2'],
@@ -56,16 +41,17 @@ test('Simple graph - longestPath', () => {
 });
 
 test('Simple graph - solitary nodes', () => {
-  const result = digl(edges, { shortestPath: true, solitary: ['8'] })[0];
+  const result = digl(edges, { solitary: ['8'] })[0];
 
   expect(result).toEqual([
     ['1'],
     ['2'],
-    ['4', '3'],
+    ['3'],
+    ['4', '7'],
     ['8'],
-    ['5', '7'],
-    ['6', '9'],
-    ['10'],
+    ['9'],
+    ['5', '10'],
+    ['6'],
   ]);
 
   expect(score(result, edges)).toBe(0);

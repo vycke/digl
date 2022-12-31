@@ -4,7 +4,6 @@ export type Position = { x: number; y: number };
 export type Path = string[];
 
 export type Config = {
-  shortestPath: boolean;
   solitary?: string[];
 };
 
