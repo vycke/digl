@@ -90,6 +90,7 @@ export function digl(edges: Edge[], config: Config): Graph {
   const _initialGraph = _startingNodes.map((node) =>
     getRankForNode(node, edges, config)
   );
+
   const _combinedRanks = mergeRanks(_initialGraph);
 
   return _combinedRanks.map((rank) => optimize(rank, edges));

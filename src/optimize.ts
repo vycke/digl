@@ -23,36 +23,14 @@ function swap(ranks: Rank[], i: number, j: number): Rank[] {
   return _ranks;
 }
 
-// Function to add empty spots for better layouts
-// For each edge, where the target is more than 1 rank away,
-// add an empty spot on the same index of the source of the edge
-function addEmptySpots(ranks: Rank[], edges: Edge[]): Rank[] {
-  ranks.forEach((rank, i) => {
-    rank.forEach((node, y) => {
-      const edgesOut = edges.filter((edge) => edge.source === node);
-      edgesOut.forEach((edge) => {
-        const rankOfTarget = ranks.findIndex((rank) =>
-          rank.includes(edge.target)
-        );
-        if (rankOfTarget > i + 1) {
-          for (let z = i + 1; z < rankOfTarget; z++) {
-            ranks[z] = [...ranks[z].slice(0, y), null, ...ranks[z].slice(y)];
-          }
-        }
-      });
-    });
-  });
-  return ranks;
-}
-
 // Optimization heuristic
 export function optimize(ranks: Rank[], edges: Edge[], retry = true): Rank[] {
   // If ranks is perfect, don't optimize
   const _oldScore = score(ranks, edges);
   if (_oldScore === 0) return ranks;
 
-  // get a copy of the original ranks, incl. empty spots
-  let _ranks = addEmptySpots(copy(ranks), edges);
+  // get a copy of the original ranks
+  let _ranks = copy(ranks);
   let _newScore = score(_ranks, edges);
 
   for (let i = 0; i < _ranks.length; i++) {

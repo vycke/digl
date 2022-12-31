@@ -29,9 +29,14 @@ export function getPaths(
 
 // Function to get all starting nodes
 export function getStartingNodes(edges: Edge[]): string[] {
-  return getNodes(edges)
+  const _nodes = getNodes(edges);
+  if (!_nodes.length) return [];
+  const _startingNodes = _nodes
     .filter((n) => !edges.find((e) => e.target === n.id))
     .map((n) => n.id);
+
+  if (_startingNodes.length) return _startingNodes;
+  return [_nodes[0].id];
 }
 
 // Union of two arrays
