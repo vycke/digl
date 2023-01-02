@@ -1,6 +1,6 @@
 import { Config, Edge, Rank, Node, Graph, Path } from './types';
 import { optimize } from './optimize';
-import { getNodes, getStartingNodes } from './utils';
+import { getNodes, getStartingNodes, intersect } from './utils';
 
 // Depth-First-Search (DFS) for an Directed Graph (cycles in paths are discarded)
 function getPaths(
@@ -20,7 +20,7 @@ function getPaths(
 }
 
 // Ranks nodes in a rank, based on the longest path from the source
-function getRanksByLongestPath(nodes: Node[], paths: string[][]): Rank[] {
+function getRanking(nodes: Node[], paths: string[][]): Rank[] {
   const ranks: Rank[] = new Array<Rank>(paths[0].length);
 
   nodes.forEach((n) => {
@@ -39,20 +39,17 @@ function getRanksByLongestPath(nodes: Node[], paths: string[][]): Rank[] {
 }
 
 // Aggregated function to determine the starting ranks for each node
-function getRankForNode(nodeId: string, edges: Edge[], config: Config) {
-  const _paths = getPaths(nodeId, edges);
-  const _nodes = getNodes(edges);
-  const _initial = getRanksByLongestPath(_nodes, _paths);
-
+function applySolitaryConfig(ranks: Rank[], config: Config) {
   // Find out if there are any nodes marked as "solitary"
   // https://github.com/kevtiq/digl/issues/8
   // These nodes are to be scheduled in a rank of their own
+  // if (!config.solitary) return ranks;
   const _ranks: Rank[] = [];
-  _initial.forEach((rank) => {
+  ranks.forEach((rank) => {
     const solitaries = rank.filter((n) =>
-      config?.solitary?.includes(n as string)
+      config.solitary.includes(n as string)
     );
-    if (!solitaries?.length) _ranks.push(rank);
+    if (!solitaries.length) _ranks.push(rank);
     else {
       _ranks.push(solitaries);
       _ranks.push(rank.filter((n) => !solitaries.includes(n)));
@@ -62,34 +59,51 @@ function getRankForNode(nodeId: string, edges: Edge[], config: Config) {
   return _ranks;
 }
 
-// function mergeRanks(graph: Graph): Graph {
-//   const _graph = [graph[0]];
+// Recursive function to find overlap in graphs and merge ranks whenever
+// overlap exists
+function merge(graph: Graph, paths: Path[][], nodes: Node[]): Graph {
+  const _paths: Path[][] = [];
+  const _graph = [];
+  const _merged: number[] = [];
 
-//   // Determine if there is a union between two graphs
-//   for (let i = 1; i < graph.length; i++) {
-//     let _hasIntersect = false;
-//     for (let j = 0; j < _graph.length; j++) {
-//       if (intersect(graph[i], _graph[j]).length) {
-//         _hasIntersect = true;
-//       }
-//       // TODO Add merging
-//       else break;
-//     }
+  for (let i = 0; i < graph.length; i++) {
+    // If i was already merged in a previous iteration, skip it
+    if (_merged.includes(i)) continue;
+    const _mergedpaths = [...paths[i]];
+    for (let j = i + 1; j < graph.length; j++) {
+      // If overlap is found, add it to the graph
+      if (intersect(graph[i], graph[j]).length) {
+        _mergedpaths.push(...paths[j]);
+        _merged.push(j);
+      }
+    }
 
-//     if (!_hasIntersect) _graph.push(graph[i]);
-//   }
+    _graph.push(getRanking(nodes, _mergedpaths.sort()));
+    _paths.push(_mergedpaths);
+  }
 
-//   return graph;
-// }
+  if (_graph.length === graph.length) return _graph;
+  return merge(_graph, _paths, nodes);
+}
 
 // The entire heuristic for determining the auto layout of a graph
-export function digl(edges: Edge[], config: Config): Graph {
+export function digl(edges: Edge[], config: Config = { solitary: [] }): Graph {
   const _startingNodes = getStartingNodes(edges);
-  const _graph = _startingNodes.map((node) =>
-    getRankForNode(node, edges, config)
+  const _nodes = getNodes(edges);
+  // Get an array of possible paths per starting nodes
+  const _paths = _startingNodes.map((node) => getPaths(node, edges));
+  // Get the unoptimized ranking per starting node
+  const _initial = _startingNodes.map((_, index) =>
+    getRanking(_nodes, _paths[index])
   );
 
-  //  const _combinedRanks = mergeRanks(_initialGraph);
+  // Whenever two rankings have overlapping nodes, ensure that they are merged
+  // and one single graph is created.
+  const _graph: Graph = merge(_initial, _paths, _nodes);
 
-  return _graph.map((rank) => optimize(rank, edges));
+  // Apply solitary nodes & optimize
+  return _graph.map((ranks) => {
+    const _ranks = config.solitary ? applySolitaryConfig(ranks, config) : ranks;
+    return optimize(_ranks, edges);
+  });
 }

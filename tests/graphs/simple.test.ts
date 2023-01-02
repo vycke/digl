@@ -21,12 +21,12 @@ const edges: Edge[] = [
 ];
 
 test('Simple graph - empty edges', () => {
-  const result = digl([], {});
+  const result = digl([]);
   expect(result).toEqual([]);
 });
 
 test('Simple graph', () => {
-  const result = digl(edges, {})[0];
+  const result = digl(edges)[0];
   expect(result).toEqual([
     ['1'],
     ['2'],
