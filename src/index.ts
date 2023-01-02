@@ -1,6 +1,5 @@
 import { Config, Edge, Rank, Node, Graph, Path } from './types';
 import { optimize } from './optimize';
-import { getNodes, getStartingNodes, intersect } from './utils';
 
 // Depth-First-Search (DFS) for an Directed Graph (cycles in paths are discarded)
 function getPaths(
@@ -17,6 +16,36 @@ function getPaths(
   else children.map((c) => getPaths(c.target, edges, [...path, nodeId], paths));
 
   return paths.sort();
+}
+
+// Funtction to get all nodes based on the edges
+function getNodes(edges: Edge[]): Node[] {
+  const nodes: Node[] = [];
+  edges.forEach(({ source, target }) => {
+    if (!nodes.find((n) => n.id === source)) nodes.push({ id: source });
+    if (!nodes.find((n) => n.id === target)) nodes.push({ id: target });
+  });
+  return nodes;
+}
+
+// Function to get all starting nodes
+function getStartingNodes(edges: Edge[]): string[] {
+  const _nodes = getNodes(edges);
+  if (!_nodes.length) return [];
+  const _startingNodes = _nodes
+    .filter((n) => !edges.find((e) => e.target === n.id))
+    .map((n) => n.id);
+
+  if (_startingNodes.length) return _startingNodes;
+  return [_nodes[0].id];
+}
+
+// Union of two arrays
+function intersect(a: unknown[], b: unknown[]): unknown[] {
+  const setA = new Set([...a.flat()]);
+  const setB = new Set([...b.flat()]);
+  const intersection = new Set([...setA].filter((x) => setB.has(x)));
+  return Array.from(intersection);
 }
 
 // Ranks nodes in a rank, based on the longest path from the source
@@ -63,7 +92,7 @@ function applySolitaryConfig(ranks: Rank[], config: Config) {
 // overlap exists
 function merge(graph: Graph, paths: Path[][], nodes: Node[]): Graph {
   const _paths: Path[][] = [];
-  const _graph = [];
+  const _graph: Graph = [];
   const _merged: number[] = [];
 
   for (let i = 0; i < graph.length; i++) {
@@ -99,7 +128,7 @@ export function digl(edges: Edge[], config: Config = { solitary: [] }): Graph {
 
   // Whenever two rankings have overlapping nodes, ensure that they are merged
   // and one single graph is created.
-  const _graph: Graph = merge(_initial, _paths, _nodes);
+  const _graph = merge(_initial, _paths, _nodes);
 
   // Apply solitary nodes & optimize
   return _graph.map((ranks) => {
