@@ -10,59 +10,28 @@ A small JavaScript library that allows you to create visual layout of directed g
 
 ## Getting started
 
-You can configure a layout machine, by using the `layout` function with a configuration object. This returns a `function` that can be used to determine the positions of the based, based on a set of `nodes`, `edges`, and a starting node.
-
 ```js
 import { digl } from '@crinkles/digl';
 
-const machine = digl({ shortestPath: false, addEmptySpots: false });
 const edges = [{ source: '1', target: '2' }];
-
-const ranks = machine.get('1', edges);
-// [['1'], ['2']]
-const score = machine.score('1', edges);
-// 0
+const ranks = digl(edges, { solitary: [] });
+// [[['1'], ['2']]]
 ```
 
 ## Configuration
 
-- `shortestPath: boolean`: order nodes in the graph based on the shortest path they are from the root, or the longest path.
-- `addEmptySpots: boolean`: try to add empty spots in the ranks further optimize the graph.
 - `solitary: string[]`: an array of node IDs (corresponding to the source/target in the edges) that should be solitary within a rank.
 
 ## How it works
 
 The algorithm used is based on the [GraphViz](https://www.graphviz.org/Documentation/TSE93.pdf), but a simplified version. It consists of several steps:
 
-1. Place each node in a _rank_ from the starting point, where the starting node is 'rank 0'
-2. Score the graph based on the initial ranks (e.g. based on the number of expected crossing edges)
-3. Switch nodes within/between ranks, and see if we improve the score of the graph
-4. If we improved the score, repeat step 3 for a maximum of X iterations, if we did not improve the score, we found a (local) optimum
-5. Based on the final ranks, determine the positions of each node
-
-A _rank_ is a list of nodes that can be accessed within X steps from the starting node (e.g. rank 1 means 1 step away from the start). Step 3 allows for different implementations (e.g. switching nodes row-based vs. column-based) to find the best (local) result.
-
-### Determine the 'initial ranks'
-
-Step one of the algorithm is to determine the initial ranks of the graph. This is achieved by combining several different techniques, and create an ordered list of ranks.
-
-1. Get all the paths based on the starting node, using a _depth-first search_ tree-traversal algorithm (note: it ignores already visited nodes within a path to avoid loops).
-2. Use a n algorithm to determine the longest or shortest (based on the config) possible route from the start node, disregarding loops. The length of the found longest route for each node is used as the corresponding _rank_ of the node.
-3. Order all nodes within a rank, based on its occurance in the longest paths, i.e. nodes in longer paths are placed higher in a rank compared to nodes in a shorter path. The resulting ranks are the initial ranks of the algorithm of this package.
-
-```js
-// get all paths DFS algorithm
-function getAllPaths(nodeId, edges, path = [], paths = []) {
-  const children = edges.filter((e) => e.source === nodeId);
-
-  if (path.includes(nodeId) || !children || children.length === 0)
-    paths.push([...path, nodeId]);
-  else
-    children.map((c) => getAllPaths(c.target, edges, [...path, nodeId], paths));
-
-  return paths.sort();
-}
-```
+1. Determine all the starting nodes (if no starting node can be found as it is part of a loop, the first node in found is used).
+2. Each starting node gets its own graph representation, or ranking. This means that for each starting node, determine the _ranking_ of each node accessible from the start node. This is done based on the "longest path from source" algorithm. The start node is placed in _rank 0_. The final output will be an array of "graphs" or ranks.
+3. Determine if there is overlap of nodes between the defined graphs. If so, the graphs are merged and a new ranking for all nodes is determined for the new graph. This happens iterative until no overlap is found between graphs anymore.
+4. Determine for each graphs the score in crossing edges between ranks and within a rank. If no crossings are found, the graphs are optimal.
+5. For each graph, switch nodes within/between ranks, and see if we improve the score of the graph. If the score did not improve, the graph is flagged not improveable (local optimum), and the original ranking is maintained.
+6. If we improved the score, repeat step 3 untill 6 with the new defined graph.
 
 ### Score the graph based on its ranks
 
@@ -81,18 +50,118 @@ let _score = 0;
 if (e1.x > e2.x && e1.t < e2.t) _score++;
 ```
 
-### Optimize the node order in each rank
+## Examples
 
-Improving the ranks to find a local optimum is achieved with the following heuristic:
+### Example acyclic graph
 
-1. Copy `ranks` into `_ranks`;
-2. Cycle through each rank of `_ranks` with index `i`;
-3. Within `_rank[i]`, cycle through the nodes, with index `j`, except the last node;
-4. Swap the values of `_rank[i][j]` and `_rank[i][j + 1]`;
-5. Compare the score of the swapped situation with the non-swapped situation;
-6. If the score _did not worsen_, apply the swapping to `_ranks`. Repeat step 1 or 2;
-7. When finished, see of the score of `_ranks` is an improvement compared to the score of `ranks`;
-8. If so, replace `ranks` with `_ranks` and repeat step 1 (for a maximum of 10 times). If not, return `ranks`.
+```ts
+const edges: Edge[] = [
+  { source: '1', target: '2' },
+  { source: '2', target: '3' },
+  { source: '2', target: '4' },
+  { source: '3', target: '4' },
+  { source: '4', target: '5' },
+  { source: '5', target: '6' },
+  { source: '4', target: '8' },
+  { source: '8', target: '5' },
+  { source: '3', target: '5' },
+  { source: '3', target: '7' },
+  { source: '7', target: '9' },
+  { source: '9', target: '6' },
+  { source: '7', target: '6' },
+  { source: '9', target: '10' },
+  { source: '10', target: '6' },
+];
+const result = digl(edges);
+// [
+//   [
+//     ['1'],
+//     ['2'],
+//     ['3'],
+//     ['4', '7'],
+//     ['8', '9'],
+//     ['5', '10'],
+//     ['6'],
+//   ]
+// ]
+
+const result = digl(edges, { solitary: ['8'] });
+// [
+//   [
+//     ['1'],
+//     ['2'],
+//     ['3'],
+//     ['4', '7'],
+//     ['8'],
+//     ['9'],
+//     ['5', '10'],
+//     ['6'],
+//   ]
+// ]
+```
+
+### Example cyclic graph
+
+```ts
+const edges: Edge[] = [
+  { source: '1', target: '2' },
+  { source: '2', target: '3' },
+  { source: '2', target: '4' },
+  { source: '1', target: '4' },
+  { source: '4', target: '1' },
+];
+
+const result = digl(edges);
+// [
+//   [
+//     ['1'],
+//     ['2'],
+//     ['3', '4']
+//   ]
+// ]
+```
+
+### Example multiple disconnected graphs
+
+```ts
+const edges: Edge[] = [
+  { source: '1', target: '2' },
+  { source: '2', target: '3' },
+  { source: '2', target: '4' },
+  { source: '5', target: '6' },
+  { source: '6', target: '7' },
+  { source: '6', target: '8' },
+];
+const result = digl(edges);
+// [
+//   [['1'], ['2'], ['3', '4']],
+//   [['5'], ['6'], ['7', '8']],
+// ]
+```
+
+### Example multiple connected graphs
+
+```ts
+const edges: Edge[] = [
+  { source: '1', target: '2' },
+  { source: '2', target: '3' },
+  { source: '2', target: '4' },
+  { source: '5', target: '6' },
+  { source: '6', target: '7' },
+  { source: '6', target: '4' },
+  { source: '8', target: '9' },
+  { source: '9', target: '10' },
+  { source: '9', target: '7' },
+];
+const result = digl(edges);
+// [
+//   [
+//     ['1', '5', '8'],
+//     ['2', '6', '9'],
+//     ['3', '4', '7', '10'],
+//   ],
+// ]
+```
 
 ### Example positioning algorithm
 

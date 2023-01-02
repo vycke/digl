@@ -24,32 +24,34 @@ function swap(ranks: Rank[], i: number, j: number): Rank[] {
 }
 
 // Optimization heuristic
-export function optimize(ranks: Rank[], edges: Edge[], iter = 0): Rank[] {
+export function optimize(ranks: Rank[], edges: Edge[], retry = true): Rank[] {
   // If ranks is perfect, don't optimize
-  if (score(ranks, edges) === 0) return ranks;
+  const _oldScore = score(ranks, edges);
+  if (_oldScore === 0) return ranks;
 
-  // get a copy of the
+  // get a copy of the original ranks
   let _ranks = copy(ranks);
+  let _newScore = score(_ranks, edges);
 
   for (let i = 0; i < _ranks.length; i++) {
     for (let j = 0; j < _ranks[i].length - 1; j++) {
       // Swap the values in _ranks
       const temp = swap(_ranks, i, j);
       // If the score does not worsen, apply the change
-      if (score(temp, edges) <= score(_ranks, edges))
+      if (score(temp, edges) <= _newScore) {
         _ranks = swap(_ranks, i, j);
+        _newScore = score(_ranks, edges);
+      }
     }
   }
 
   // When found a perfect score, stop
-  if (score(_ranks, edges) === 0) return _ranks;
-  // Only on first try, if the same score is found, the algorithm fires again
-  if (iter === 0 && score(_ranks, edges) < score(ranks, edges))
-    return optimize(_ranks, edges, iter + 1);
-
-  // If we found a better score than the original, try again, else stop.
-  if (iter < 10 && score(_ranks, edges) < score(ranks, edges))
-    return optimize(_ranks, edges, iter + 1);
+  if (_newScore === 0) return _ranks;
+  // If a better score is find that is not optimal, continue searching
+  // If an equal score is found, execute the algorithm one more time
+  // to avoid cyclic optimizations
+  if (retry && _newScore <= _oldScore)
+    return optimize(_ranks, edges, _newScore !== _oldScore);
 
   return _ranks;
 }
