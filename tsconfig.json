@@ -13,6 +13,7 @@
     "strict": true,
     "allowSyntheticDefaultImports": true,
     "allowJs": true,
-    "removeComments": true
+    "removeComments": true,
+    "declaration": true,
   }
 }
