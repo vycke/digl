@@ -1,6 +1,5 @@
 {
   "name": "@crinkles/digl",
-  "type": "module",
   "version": "2.0.1",
   "description": "Autolayout graphs",
   "main": "dist/index.js",
