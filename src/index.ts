@@ -2,7 +2,7 @@ import { Config, Edge, Rank, Node, Graph, Path } from './types';
 import { optimize } from './optimize';
 
 // Depth-First-Search (DFS) for an Directed Graph (cycles in paths are discarded)
-function getPaths(
+function getPathByNode(
   nodeId: string,
   edges: Edge[],
   path: Path = [],
@@ -13,13 +13,16 @@ function getPaths(
   // first check avoids cyclic paths
   if (path.includes(nodeId)) paths.push(path);
   else if (!children || children.length === 0) paths.push([...path, nodeId]);
-  else children.map((c) => getPaths(c.target, edges, [...path, nodeId], paths));
+  else
+    children.map((c) =>
+      getPathByNode(c.target, edges, [...path, nodeId], paths)
+    );
 
   return paths.sort();
 }
 
 // Funtction to get all nodes based on the edges
-function getNodes(edges: Edge[]): Node[] {
+function getNodesFromEdges(edges: Edge[]): Node[] {
   const nodes: Node[] = [];
   edges.forEach(({ source, target }) => {
     if (!nodes.find((n) => n.id === source)) nodes.push({ id: source });
@@ -28,24 +31,38 @@ function getNodes(edges: Edge[]): Node[] {
   return nodes;
 }
 
-// Function to get all starting nodes
-function getSources(edges: Edge[]): string[] {
-  const _nodes = getNodes(edges);
-  if (!_nodes.length) return [];
-  const _sources = _nodes
-    .filter((n) => !edges.find((e) => e.target === n.id))
-    .map((n) => n.id);
+// Function to get all paths grouped by source node
+function getPaths(edges: Edge[], nodes: Node[]): Path[][] {
+  const _paths: Path[][] = [];
+  const _nodes = nodes.map((n) => n.id);
 
-  if (_sources.length) return _sources;
-  return [_nodes[0].id];
+  function determinePaths(sources: string[]) {
+    sources.forEach((node) => _paths.push(getPathByNode(node, edges)));
+    const _usedNodes = Array.from(new Set([..._paths.flat().flat()]));
+    if (_usedNodes.length < nodes.length)
+      determinePaths([diff(_nodes, _usedNodes)[0]]);
+  }
+
+  const _sources = _nodes.filter((n) => !edges.find((e) => e.target === n));
+  determinePaths(_sources);
+
+  return _paths;
 }
 
 // Union of two arrays
-function intersect(a: unknown[], b: unknown[]): unknown[] {
-  const setA = new Set([...a.flat()]);
-  const setB = new Set([...b.flat()]);
+function intersect<T>(a: T[], b: T[]): T[] {
+  const setA = new Set([...a]);
+  const setB = new Set([...b]);
   const intersection = new Set([...setA].filter((x) => setB.has(x)));
   return Array.from(intersection);
+}
+
+// Union of two arrays
+function diff<T>(a: T[], b: T[]): T[] {
+  const setA = new Set([...a]);
+  const setB = new Set([...b]);
+  const diff = new Set([...setA].filter((x) => !setB.has(x)));
+  return Array.from(diff);
 }
 
 // Ranks nodes in a rank, based on the longest path from the source
@@ -99,7 +116,7 @@ function merge(paths: Path[][], nodes: Node[]): Path[][] {
     const _mergedpaths = [...paths[i]];
     for (let j = i + 1; j < paths.length; j++) {
       // If overlap is found, add it to the graph
-      if (intersect(paths[i], paths[j]).length) {
+      if (intersect<string>(paths[i].flat(), paths[j].flat()).length) {
         _mergedpaths.push(...paths[j]);
         _merged.push(j);
       }
@@ -114,10 +131,12 @@ function merge(paths: Path[][], nodes: Node[]): Path[][] {
 
 // The entire heuristic for determining the auto layout of a graph
 export function digl(edges: Edge[], config: Config = { solitary: [] }): Graph {
-  const _sources = getSources(edges);
-  const _nodes = getNodes(edges);
-  // Get an array of possible paths per starting nodes
-  const _paths = _sources.map((node) => getPaths(node, edges));
+  const _nodes = getNodesFromEdges(edges);
+  if (!_nodes.length) return [];
+
+  // Find all source nodes and corresponding paths
+  const _paths = getPaths(edges, _nodes);
+
   // Get the unoptimized ranking per starting node
   const _graph = merge(_paths, _nodes).map((p) => getRanking(_nodes, p));
 

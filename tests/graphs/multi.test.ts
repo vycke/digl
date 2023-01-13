@@ -68,3 +68,23 @@ test('Multiple graphs - complex connected', () => {
 
   expect(score(result[0], edges)).toBe(0);
 });
+
+test('Multiple graphs - one cyclic', () => {
+  const edges: Edge[] = [
+    { source: '•r', target: '0' },
+    { source: '•r', target: '1' },
+    { source: '1', target: '2' },
+    { source: '0', target: '1' },
+    { source: '1', target: '0' },
+    { source: '2', target: '•r' },
+    { source: '3', target: '3' },
+    { source: '4', target: '3' },
+  ];
+  const result = digl(edges);
+  expect(result).toEqual([
+    [['4'], ['3']],
+    [['•r'], ['0', '1'], ['2']],
+  ]);
+  expect(score(result[0], edges)).toBe(0);
+  expect(score(result[1], edges)).toBe(0);
+});
